@@ -1,66 +1,80 @@
-# Django-APP: Aplicación Web con Django
+# 🐍 Django-APP
 
-Este repositorio contiene una aplicación web desarrollada con el framework [Django](https://www.djangoproject.com/), una potente y popular herramienta para construir aplicaciones web robustas y escalables utilizando Python.
+Aplicación web desarrollada con Django por **Isaac Esteban Haro Torres**.
 
-## Estructura del Proyecto
+---
 
-*   **`DjangoApp/`**: Este directorio principal probablemente contiene la configuración del proyecto Django, incluyendo:
-    *   `settings.py`: Configuración general del proyecto.
-    *   `urls.py`: Definición de las rutas URL de la aplicación.
-    *   `wsgi.py` y `asgi.py`: Puntos de entrada para servidores web.
-    *   Subdirectorios que pueden contener una o más aplicaciones Django (apps) con sus propios modelos, vistas, plantillas y archivos estáticos.
+## 📝 Descripción
 
-## Características Potenciales
+Este repositorio contiene una aplicación web desarrollada con el framework Django, una potente y popular herramienta para construir aplicaciones web robustas y escalables utilizando Python.
 
-*   **Administración de Contenido:** Posiblemente incluye un panel de administración para gestionar datos.
-*   **Bases de Datos:** Integración con bases de datos a través del ORM de Django.
-*   **Autenticación y Autorización:** Gestión de usuarios y permisos.
-*   **Desarrollo Rápido:** Aprovecha la filosofía "Don't Repeat Yourself" (DRY) de Django para un desarrollo eficiente.
+---
 
-## Configuración y Ejecución
+## ✨ Características
 
-Para configurar y ejecutar esta aplicación Django localmente, sigue estos pasos:
+- Administración de contenido
+- Integración con bases de datos (ORM de Django)
+- Autenticación y autorización
+- Desarrollo rápido (DRY)
 
-1.  **Clonar el repositorio:**
-    ```bash
-    git clone https://github.com/ieharo1/Django-APP.git
-    cd Django-APP
-    ```
+---
 
-2.  **Crear y activar un entorno virtual:**
-    ```bash
-    python -m venv venv
-    .\venv\Scripts\activate  # En Windows
-    source venv/bin/activate # En macOS/Linux
-    ```
+## 🏗️ Estructura del Proyecto
 
-3.  **Instalar dependencias:**
-    ```bash
-    pip install -r requirements.txt # Si existe un archivo requirements.txt
-    pip install django
-    # Instala otras dependencias necesarias que encuentres en el código
-    ```
+```
+DjangoApp/
+├── settings.py    # Configuración del proyecto
+├── urls.py        # Rutas URL
+├── wsgi.py       # Punto de entrada WSGI
+├── asgi.py       # Punto de entrada ASGI
+└── apps/         # Aplicaciones Django
+```
 
-4.  **Aplicar migraciones:**
-    ```bash
-    python manage.py migrate
-    ```
+---
 
-5.  **Crear un superusuario (opcional, para acceder al admin):**
-    ```bash
-    python manage.py createsuperuser
-    ```
+## 🛠️ Stack Tecnológico
 
-6.  **Ejecutar el servidor de desarrollo:**
-    ```bash
-    python manage.py runserver
-    ```
-    Luego, abre tu navegador y visita `http://127.0.0.1:8000/`.
+- Python
+- Django
+- Base de datos (SQLite, PostgreSQL, MySQL)
 
-## 🧑‍💻 Autor
+---
 
-Isaac Haro Ingeniero en Sistemas · Full Stack · Automatización · Data
+## 🚀 Configuración y Ejecución
+
+```bash
+# Clonar el repositorio
+git clone https://github.com/ieharo1/Django-APP.git
+cd Django-APP
+
+# Crear entorno virtual
+python -m venv venv
+.\venv\Scripts\activate  # Windows
+source venv/bin/activate # Linux/Mac
+
+# Instalar dependencias
+pip install django
+
+# Aplicar migraciones
+python manage.py migrate
+
+# Ejecutar servidor
+python manage.py runserver
+```
+
+---
+
+## 👨‍💻 Desarrollado por Isaac Esteban Haro Torres
+
+**Ingeniero en Sistemas · Full Stack · Automatización · Data**
+
+- 📧 Email: zackharo1@gmail.com
+- 📱 WhatsApp: 098805517
+- 💻 GitHub: https://github.com/ieharo1
+- 🌐 Portafolio: https://ieharo1.github.io/portafolio-isaac.haro/
+
+---
 
 ## 📄 Licencia
 
-MIT — contribuciones bienvenidas 🚀
+© 2026 Isaac Esteban Haro Torres - Todos los derechos reservados.
