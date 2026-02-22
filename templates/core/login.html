@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block login_content %}
+<div class="login-page">
+    <div class="login-card">
+        <div class="login-header">
+            <div class="logo-icon">
+                <i class="bi bi-car-front-fill"></i>
+            </div>
+            <h1>RepuestoControl EC</h1>
+            <p>Sistema de Gestión de Repuestos</p>
+        </div>
+        <div class="login-body">
+            {% if messages %}
+                {% for message in messages %}
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                {% endfor %}
+            {% endif %}
+            
+            <form method="post">
+                {% csrf_token %}
+                {% if request.GET.next %}
+                <input type="hidden" name="next" value="{{ request.GET.next }}">
+                {% endif %}
+                
+                <div class="form-floating">
+                    <input type="text" class="form-control" id="id_username" name="username" placeholder="Usuario" required autofocus>
+                    <label for="id_username">Usuario</label>
+                </div>
+                
+                <div class="form-floating">
+                    <input type="password" class="form-control" id="id_password" name="password" placeholder="Contraseña" required>
+                    <label for="id_password">Contraseña</label>
+                </div>
+                
+                <button type="submit" class="btn btn-primary btn-login">
+                    <i class="bi bi-box-arrow-in-right me-2"></i>
+                    Iniciar Sesión
+                </button>
+            </form>
+            
+            <div class="text-center mt-4">
+                <small class="text-muted">
+                    <i class="bi bi-info-circle me-1"></i>
+                    Credenciales: admin / admin123
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}Modelos - RepuestoControl EC{% endblock %}
+{% block page_title %}Modelos{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <h5 class="mb-0"><i class="bi bi-car me-2"></i>Modelos</h5>
+            </div>
+            <div class="col-md-6 text-end">
+                <a href="{% url 'inventario:modelo_create' %}" class="btn btn-primary btn-sm">
+                    <i class="bi bi-plus-circle"></i> Nuevo Modelo
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Marca</th>
+                    <th>Modelo</th>
+                    <th>Años</th>
+                    <th class="text-center">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for modelo in modelos %}
+                <tr>
+                    <td>{{ modelo.marca.nombre }}</td>
+                    <td><strong>{{ modelo.nombre }}</strong></td>
+                    <td>{{ modelo.anio_inicio|default:"-" }}{% if modelo.anio_fin %} - {{ modelo.anio_fin }}{% endif %}</td>
+                    <td class="text-center">
+                        <div class="btn-group btn-group-sm">
+                            <a href="{% url 'inventario:modelo_edit' modelo.id %}" class="btn btn-outline-primary">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <a href="{% url 'inventario:modelo_delete' modelo.id %}" class="btn btn-outline-danger">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="4" class="text-center text-muted">No hay modelos</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

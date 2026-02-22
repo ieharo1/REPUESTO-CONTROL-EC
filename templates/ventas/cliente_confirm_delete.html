@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Confirmar eliminación{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header"><h5 class="mb-0">Confirmar eliminación</h5></div>
+    <div class="card-body">
+        <p>¿Está seguro de eliminar <strong>{{ object }}</strong>?</p>
+        <form method="post">{% csrf_token %}
+            <div class="text-end">
+                <a href="javascript:history.back()" class="btn btn-secondary">Cancelar</a>
+                <button type="submit" class="btn btn-danger">Eliminar</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

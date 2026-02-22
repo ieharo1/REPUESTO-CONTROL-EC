@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}{{ action }} Marca - RepuestoControl EC{% endblock %}
+{% block page_title %}{{ action }} Marca{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="bi bi-tags me-2"></i>{{ action }} Marca</h5>
+    </div>
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">Nombre</label>
+                    {{ form.nombre }}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">País de origen</label>
+                    {{ form.pais }}
+                </div>
+                <div class="col-md-12">
+                    <div class="form-check">
+                        {{ form.activa }}
+                        <label class="form-check-label">Activa</label>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-4 text-end">
+                <a href="{% url 'inventario:marca_list' %}" class="btn btn-secondary">Cancelar</a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-save"></i> Guardar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

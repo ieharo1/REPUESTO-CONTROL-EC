@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+{% block title %}Venta {{ venta.numero }} - RepuestoControl EC{% endblock %}
+{% block page_title %}Detalle de Venta{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card mb-3">
+            <div class="card-header">
+                <div class="row align-items-center">
+                    <div class="col-md-6">
+                        <h5 class="mb-0"><i class="bi bi-receipt me-2"></i>Venta {{ venta.numero }}</h5>
+                    </div>
+                    <div class="col-md-6 text-end">
+                        {% if venta.estado != 'anulada' %}
+                        <a href="{% url 'ventas:venta_anular' venta.id %}" class="btn btn-danger btn-sm">
+                            <i class="bi bi-x-circle"></i> Anular
+                        </a>
+                        {% endif %}
+                        <a href="{% url 'ventas:venta_list' %}" class="btn btn-secondary btn-sm">Volver</a>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <h6 class="text-muted mb-3">Información del Cliente</h6>
+                        <table class="table table-borderless table-sm">
+                            <tr><td><strong>Cliente:</strong></td><td>{{ venta.cliente_nombre|default:"CONSUMIDOR FINAL" }}</td></tr>
+                            <tr><td><strong>Identificación:</strong></td><td>{{ venta.cliente_identificacion|default:"-" }}</td></tr>
+                            <tr><td><strong>Dirección:</strong></td><td>{{ venta.cliente_direccion|default:"-" }}</td></tr>
+                            <tr><td><strong>Teléfono:</strong></td><td>{{ venta.cliente_telefono|default:"-" }}</td></tr>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-muted mb-3">Información de la Venta</h6>
+                        <table class="table table-borderless table-sm">
+                            <tr><td><strong>Vendedor:</strong></td><td>{{ venta.vendedor.username }}</td></tr>
+                            <tr><td><strong>Método de pago:</strong></td><td>{{ venta.get_metodo_pago_display }}</td></tr>
+                            <tr><td><strong>Fecha:</strong></td><td>{{ venta.created_at|date:"d/m/Y H:i" }}</td></tr>
+                            <tr><td><strong>Estado:</strong></td>
+                                <td>
+                                    {% if venta.estado == 'completada' %}<span class="badge bg-success">{{ venta.get_estado_display }}</span>
+                                    {% elif venta.estado == 'anulada' %}<span class="badge bg-danger">{{ venta.get_estado_display }}</span>
+                                    {% else %}<span class="badge bg-warning">{{ venta.get_estado_display }}</span>{% endif %}
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+                
+                <h6 class="text-muted mb-3">Detalle de Productos</h6>
+                <table class="table table-sm">
+                    <thead class="table-light">
+                        <tr><th>Código</th><th>Producto</th><th class="text-center">Cantidad</th><th class="text-end">Precio</th><th class="text-end">Subtotal</th></tr>
+                    </thead>
+                    <tbody>
+                        {% for detalle in venta.detalles.all %}
+                        <tr>
+                            <td><code>{{ detalle.repuesto.codigo }}</code></td>
+                            <td>{{ detalle.repuesto.nombre }}</td>
+                            <td class="text-center">{{ detalle.cantidad }}</td>
+                            <td class="text-end">${{ detalle.precio_unitario|floatformat:2 }}</td>
+                            <td class="text-end">${{ detalle.subtotal|floatformat:2 }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot class="table-light">
+                        <tr><th colspan="4" class="text-end">Subtotal 12%:</th><td class="text-end">${{ venta.subtotal_12|floatformat:2 }}</td></tr>
+                        <tr><th colspan="4" class="text-end">Subtotal 0%:</th><td class="text-end">${{ venta.subtotal_0|floatformat:2 }}</td></tr>
+                        {% if venta.descuento > 0 %}
+                        <tr><th colspan="4" class="text-end text-danger">Descuento:</th><td class="text-end text-danger">-${{ venta.descuento|floatformat:2 }}</td></tr>
+                        {% endif %}
+                        <tr><th colspan="4" class="text-end">IVA:</th><td class="text-end">${{ venta.iva|floatformat:2 }}</td></tr>
+                        <tr><th colspan="4" class="text-end h5">Total:</th><td class="text-end h5 text-success">${{ venta.total|floatformat:2 }}</td></tr>
+                    </tfoot>
+                </table>
+                
+                {% if venta.notas %}
+                <div class="alert alert-info mt-3"><strong>Notas:</strong> {{ venta.notas }}</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <!-- Información SRI -->
+        <div class="card mb-3">
+            <div class="card-header bg-primary text-white">
+                <h6 class="mb-0"><i class="bi bi-file-earmark-check me-2"></i>Factura Electrónica SRI</h6>
+            </div>
+            <div class="card-body class="table table">
+                <table class="table table-borderless table-sm">
+                    <tr><td><strong>Factura No.</strong></td><td><code class="h6">{{ venta.numero_factura|default:"-" }}</code></td></tr>
+                    <tr><td><strong>Estado SRI</strong></td>
+                        <td>
+                            {% if venta.estado_sri == 'autorizada' %}
+                            <span class="badge bg-success">AUTORIZADA</span>
+                            {% elif venta.estado_sri == 'enviada' %}
+                            <span class="badge bg-info">ENVIADA</span>
+                            {% elif venta.estado_sri == 'anulada' %}
+                            <span class="badge bg-danger">ANULADA</span>
+                            {% else %}
+                            <span class="badge bg-warning">{{ venta.estado_sri|upper }}</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr><td><strong>Clave de Acceso</strong></td><td><small>{{ venta.clave_acceso|default:"-" }}</small></td></tr>
+                </table>
+                
+                <div class="d-grid gap-2 mt-3">
+                    <button class="btn btn-outline-primary btn-sm" onclick="alert('Funcionalidad de descarga de XML en desarrollo')">
+                        <i class="bi bi-download me-1"></i> Descargar XML
+                    </button>
+                    <button class="btn btn-outline-danger btn-sm" onclick="alert('Funcionalidad de PDF RIDE en desarrollo')">
+                        <i class="bi bi-file-pdf me-1"></i> Generar RIDE (PDF)
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Información de Configuración -->
+        {% if ride_data %}
+        <div class="card">
+            <div class="card-header bg-secondary text-white">
+                <h6 class="mb-0"><i class="bi bi-building me-2"></i>Datos de Empresa</h6>
+            </div>
+            <div class="card-body py-2">
+                <small>
+                    <p class="mb-1"><strong>{{ ride_data.empresa.razon_social }}</strong></p>
+                    <p class="mb-1">RUC: {{ ride_data.empresa.ruc }}</p>
+                    <p class="mb-0">{{ ride_data.empresa.direccion }}</p>
+                </small>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

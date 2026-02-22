@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}Categorías - RepuestoControl EC{% endblock %}
+{% block page_title %}Categorías{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <div class="row align-items-center">
+            <div class="col-md-6"><h5 class="mb-0"><i class="bi bi-grid me-2"></i>Categorías</h5></div>
+            <div class="col-md-6 text-end">
+                <a href="{% url 'inventario:categoria_create' %}" class="btn btn-primary btn-sm">
+                    <i class="bi bi-plus-circle"></i> Nueva Categoría
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <table class="table table-hover">
+            <thead><tr><th>Nombre</th><th>Descripción</th><th class="text-center">Acciones</th></tr></thead>
+            <tbody>
+                {% for cat in categorias %}
+                <tr>
+                    <td><strong>{{ cat.nombre }}</strong></td>
+                    <td>{{ cat.descripcion|default:"-"|truncatewords:10 }}</td>
+                    <td class="text-center">
+                        <div class="btn-group btn-group-sm">
+                            <a href="{% url 'inventario:categoria_edit' cat.id %}" class="btn btn-outline-primary"><i class="bi bi-pencil"></i></a>
+                            <a href="{% url 'inventario:categoria_delete' cat.id %}" class="btn btn-outline-danger"><i class="bi bi-trash"></i></a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="3" class="text-center text-muted">No hay categorías</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

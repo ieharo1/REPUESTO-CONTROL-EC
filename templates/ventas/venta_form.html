@@ -1,0 +1,421 @@
+{% extends "base.html" %}
+{% block title %}Nueva Venta - RepuestoControl EC{% endblock %}
+{% block page_title %}Nueva Venta{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card mb-3">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="bi bi-cart-plus me-2"></i>Nueva Venta</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" id="ventaForm">
+                    {% csrf_token %}
+                    
+                    <!-- Cliente -->
+                    <div class="row mb-4">
+                        <div class="col-12 mb-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <label class="form-label mb-0">Cliente</label>
+                                <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#clienteModal">
+                                    <i class="bi bi-plus-circle"></i> Nuevo Cliente
+                                </button>
+                            </div>
+                            <select name="cliente" id="clienteSelect" class="form-select mt-2">
+                                <option value="">-- Seleccionar Cliente --</option>
+                                {% for cliente in clientes %}
+                                <option value="{{ cliente.id }}" 
+                                        data-cedula="{{ cliente.cedula }}"
+                                        data-tipo="{{ cliente.tipo_identificacion }}"
+                                        data-direccion="{{ cliente.direccion }}"
+                                        data-telefono="{{ cliente.telefono }}"
+                                        data-email="{{ cliente.email }}">
+                                    {{ cliente.nombre }} - {{ cliente.cedula|default:"Sin identificación" }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <label class="form-label">Método de Pago</label>
+                            <select name="metodo_pago" class="form-select" id="metodoPago">
+                                <option value="efectivo">01 - Efectivo</option>
+                                <option value="transferencia">02 - Cheque</option>
+                                <option value="tarjeta_debito">03 - Transferencia</option>
+                                <option value="tarjeta_credito">04 - Tarjeta Débito</option>
+                                <option value="cheque">05 - Tarjeta Crédito</option>
+                                <option value="diplomatico">15 - Compensación</option>
+                                <option value="otros">20 - Otros</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Forma de Pago SRI</label>
+                            <select name="forma_pago_sri" class="form-select">
+                                <option value="01">01 - Efectivo</option>
+                                <option value="02">02 - Cheque</option>
+                                <option value="03">03 - Transferencia</option>
+                                <option value="04">04 - Tarjeta de Débito</option>
+                                <option value="05">05 - Tarjeta de Crédito</option>
+                                <option value="06">06 - Crédito</option>
+                                <option value="07">07 - Contrapartida</option>
+                                <option value="08">08 - Consignación</option>
+                                <option value="09">09 - Cobro a Terceros</option>
+                                <option value="10">10 - Débito Automático</option>
+                                <option value="11">11 - Compensación</option>
+                                <option value="12">12 - Letras de Cambio</option>
+                                <option value="13">13 - Pagaré</option>
+                                <option value="14">14 - Tarjeta Prepago</option>
+                                <option value="15">15 - Tarjeta de Fidelización</option>
+                                <option value="16">16 - Financiamiento</option>
+                                <option value="17">17 - Cupón</option>
+                                <option value="18">18 - Dinero Electrónico</option>
+                                <option value="19">19 - Tarjeta Dignidad</option>
+                                <option value="20">20 - Dinero Electrónico de Banquero</option>
+                                <option value="21">21 - Bonos de Consumo</option>
+                                <option value="22">22 - Anticipo por Liquidación de Viaje</option>
+                                <option value="23">23 - Application Program Interface</option>
+                                <option value="24">24 - Pagos con Divisas</option>
+                                <option value="25">25 - Pagos Internos</option>
+                                <option value="26">26 - PayPhone</option>
+                                <option value="27">27 - Yape</option>
+                                <option value="28">28 - Instant Money</option>
+                                <option value="29">29 - Código QR</option>
+                                <option value="30">30 - Otros</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- Agregar productos -->
+                    <div class="card bg-light mb-4">
+                        <div class="card-header">
+                            <div class="row align-items-center">
+                                <div class="col-md-6"><h6 class="mb-0">Agregar productos</h6></div>
+                                <div class="col-md-6">
+                                    <input type="text" id="buscarRepuesto" class="form-control form-control-sm" placeholder="Buscar repuesto por código o nombre...">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div id="resultadosBusqueda" class="mb-3" style="max-height: 200px; overflow-y: auto;"></div>
+                            <div class="table-responsive">
+                                <table class="table table-sm table-hover" id="tablaItems">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th>Producto</th>
+                                            <th width="100">Precio</th>
+                                            <th width="100">Cantidad</th>
+                                            <th width="120">Subtotal</th>
+                                            <th width="50"></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="itemsBody">
+                                        <tr id="emptyRow"><td colspan="5" class="text-center text-muted">No hay productos agregados</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Notas -->
+                    <div class="mb-3">
+                        <label class="form-label">Notas</label>
+                        <textarea name="notas" class="form-control" rows="2" placeholder="Observaciones de la venta..."></textarea>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Resumen de venta -->
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="bi bi-calculator me-2"></i>Resumen</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label">Descuento ($)</label>
+                    <input type="number" name="descuento" class="form-control" value="0" min="0" step="0.01" id="descuentoInput" oninput="updateTotales()">
+                </div>
+                
+                <hr>
+                
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Subtotal 12%:</span>
+                    <span>$<span id="subtotal12">0.00</span></span>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Subtotal 0%:</span>
+                    <span>$<span id="subtotal0">0.00</span></span>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Descuento:</span>
+                    <span>-$<span id="descuentoDisplay">0.00</span></span>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span>IVA (12%):</span>
+                    <span>$<span id="ivaDisplay">0.00</span></span>
+                </div>
+                <hr>
+                <div class="d-flex justify-content-between">
+                    <h4 class="mb-0">Total:</h4>
+                    <h4 class="text-success mb-0">$<span id="total">0.00</span></h4>
+                </div>
+                
+                <div class="d-grid gap-2 mt-4">
+                    <a href="{% url 'ventas:venta_list' %}" class="btn btn-secondary">Cancelar</a>
+                    <button type="button" class="btn btn-success btn-lg" onclick="confirmarVenta()">
+                        <i class="bi bi-check-circle"></i> Completar Venta
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Info SRI -->
+        <div class="card mt-3">
+            <div class="card-header bg-info text-white">
+                <h6 class="mb-0"><i class="bi bi-info-circle me-2"></i>Información SRI</h6>
+            </div>
+            <div class="card-body py-2">
+                <small class="text-muted">
+                    <p class="mb-1"><strong>Establecimiento:</strong> 001</p>
+                    <p class="mb-1"><p class="mb-1"><strong>Punto de Emisión:</strong> 001</p>
+                    <p class="mb-1"><strong>IVA:</strong> 12%</p>
+                    <p class="mb-0"><strong>Productos:</strong> Bienes gravados</p>
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Nuevo Cliente -->
+<div class="modal fade" id="clienteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-person-plus me-2"></i>Nuevo Cliente</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="clienteForm">
+                    <div class="mb-3">
+                        <label class="form-label">Tipo de Identificación *</label>
+                        <select name="tipo_identificacion" class="form-select" required>
+                            <option value="consumidor_final">Consumidor Final</option>
+                            <option value="ruc">RUC</option>
+                            <option value="cedula">Cédula</option>
+                            <option value="pasaporte">Pasaporte</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Cédula/RUC/Pasaporte</label>
+                        <input type="text" name="cedula" class="form-control" placeholder="Sin guión">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Nombre/Razón Social *</label>
+                        <input type="text" name="nombre" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Teléfono</label>
+                        <input type="text" name="telefono" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        <input type="email" name="email" class="form-control">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Dirección</label>
+                        <textarea name="direccion" class="form-control" rows="2"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="guardarCliente()">
+                    <i class="bi bi-save"></i> Guardar Cliente
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let items = [];
+
+function agregarItem(id, codigo, nombre, precio, stock) {
+    if (stock <= 0) { alert('Producto sin stock'); return; }
+    if (items.find(i => i.id === id)) { alert('Producto ya agregado'); return; }
+    items.push({ id, codigo, nombre, precio, cantidad: 1, stock, iva: true }); // Por defecto IVA 12%
+    renderItems();
+    document.getElementById('buscarRepuesto').value = '';
+    document.getElementById('resultadosBusqueda').innerHTML = '';
+}
+
+function renderItems() {
+    const tbody = document.getElementById('itemsBody');
+    tbody.innerHTML = '';
+    
+    if (items.length === 0) {
+        tbody.innerHTML = '<tr id="emptyRow"><td colspan="5" class="text-center text-muted">No hay productos agregados</td></tr>';
+    }
+    
+    items.forEach((item, idx) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>
+                <strong>${item.codigo}</strong><br>
+                <small class="text-muted">${item.nombre}</small>
+            </td>
+            <td>
+                <input type="number" class="form-control form-control-sm" value="${item.precio}" 
+                       step="0.01" min="0" onchange="updatePrecio(${idx}, this.value)">
+            </td>
+            <td>
+                <input type="number" class="form-control form-control-sm" value="${item.cantidad}" 
+                       min="1" max="${item.stock}" onchange="updateCantidad(${idx}, this.value)">
+            </td>
+            <td class="text-end">$<span>${(item.precio * item.cantidad).toFixed(2)}</span></td>
+            <td>
+                <button type="button" class="btn btn-sm btn-danger" onclick="removeItem(${idx})">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </td>
+        `;
+        
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'items';
+        input.value = `${item.id},${item.cantidad},${item.precio}`;
+        tr.appendChild(input);
+        
+        tbody.appendChild(tr);
+    });
+    
+    updateTotales();
+}
+
+function updateCantidad(idx, val) {
+    items[idx].cantidad = parseInt(val);
+    renderItems();
+}
+
+function updatePrecio(idx, val) {
+    items[idx].precio = parseFloat(val);
+    renderItems();
+}
+
+function removeItem(idx) {
+    items.splice(idx, 1);
+    renderItems();
+}
+
+function updateTotales() {
+    const descuento = parseFloat(document.getElementById('descuentoInput').value) || 0;
+    
+    let subtotal12 = 0;
+    let subtotal0 = 0;
+    
+    items.forEach(item => {
+        if (item.iva) {
+            subtotal12 += item.precio * item.cantidad;
+        } else {
+            subtotal0 += item.precio * item.cantidad;
+        }
+    });
+    
+    const subtotalBase = subtotal12 - descuento;
+    const iva = subtotalBase > 0 ? subtotalBase * 0.12 : 0;
+    const total = subtotal12 + subtotal0 + iva - descuento;
+    
+    document.getElementById('subtotal12').textContent = subtotal12.toFixed(2);
+    document.getElementById('subtotal0').textContent = subtotal0.toFixed(2);
+    document.getElementById('descuentoDisplay').textContent = descuento.toFixed(2);
+    document.getElementById('ivaDisplay').textContent = iva.toFixed(2);
+    document.getElementById('total').textContent = total.toFixed(2);
+}
+
+function confirmarVenta() {
+    if (items.length === 0) {
+        alert('Debe agregar al menos un producto');
+        return;
+    }
+    document.getElementById('ventaForm').submit();
+}
+
+async function guardarCliente() {
+    const form = document.getElementById('clienteForm');
+    const formData = new FormData(form);
+    
+    try {
+        const response = await fetch('{% url "ventas:cliente_api_create" %}', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}'
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            // Agregar nuevo cliente al select
+            const select = document.getElementById('clienteSelect');
+            const option = document.createElement('option');
+            option.value = data.cliente.id;
+            option.textContent = `${data.cliente.nombre} - ${data.cliente.cedula || 'Sin identificación'}`;
+            option.dataset.cedula = data.cliente.cedula;
+            option.dataset.tipo = data.cliente.tipo_identificacion;
+            option.dataset.direccion = data.cliente.direccion;
+            option.dataset.telefono = data.cliente.telefono;
+            option.dataset.email = data.cliente.email;
+            select.appendChild(option);
+            select.value = data.cliente.id;
+            
+            // Cerrar modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('clienteModal'));
+            modal.hide();
+            form.reset();
+            
+            alert('Cliente guardado correctamente');
+        } else {
+            alert('Error: ' + data.error);
+        }
+    } catch (error) {
+        alert('Error al guardar cliente');
+    }
+}
+
+// Buscador
+document.getElementById('buscarRepuesto').addEventListener('input', async function() {
+    const q = this.value;
+    if (q.length < 2) { 
+        document.getElementById('resultadosBusqueda').innerHTML = ''; 
+        return; 
+    }
+    const res = await fetch(`/inventario/api/buscar/?q=${q}`);
+    const data = await res.json();
+    let html = '<div class="list-group">';
+    if (data.length === 0) {
+        html += '<div class="list-group-item text-muted">No se encontraron productos</div>';
+    }
+    data.forEach(r => {
+        const stockClass = r.stock <= 0 ? 'text-danger' : (r.critico ? 'text-warning' : 'text-success');
+        html += `<button type="button" class="list-group-item list-group-item-action" onclick="agregarItem(${r.id}, '${r.codigo}', '${r.nombre.replace(/'/g, "\\'")}', ${r.precio_venta}, ${r.stock})">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <strong>${r.codigo}</strong> - ${r.nombre}
+                    <br><small class="text-muted">${r.marca} ${r.modelo || ''}</small>
+                </div>
+                <div class="text-end">
+                    <div class="fw-bold">$${r.precio_venta.toFixed(2)}</div>
+                    <small class="${stockClass}">Stock: ${r.stock}</small>
+                </div>
+            </div>
+        </button>`;
+    });
+    html += '</div>';
+    document.getElementById('resultadosBusqueda').innerHTML = html;
+});
+</script>
+{% endblock %}

@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+{% block title %}Inventario - RepuestoControl EC{% endblock %}
+{% block page_title %}Inventario{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <h5 class="mb-0"><i class="bi bi-box-seam me-2"></i>Repuestos</h5>
+            </div>
+            <div class="col-md-6 text-end">
+                <a href="{% url 'inventario:repuesto_create' %}" class="btn btn-primary btn-sm">
+                    <i class="bi bi-plus-circle"></i> Nuevo Repuesto
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <form method="get" class="mb-3">
+            <div class="row g-2">
+                <div class="col-md-2">
+                    <input type="text" name="q" class="form-control" placeholder="Buscar..." value="{{ query }}">
+                </div>
+                <div class="col-md-2">
+                    <select name="marca" class="form-select">
+                        <option value="">Todas las marcas</option>
+                        {% for marca in marcas %}
+                        <option value="{{ marca.id }}">{{ marca.nombre }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <select name="categoria" class="form-select">
+                        <option value="">Todas las categorías</option>
+                        {% for cat in categorias %}
+                        <option value="{{ cat.id }}">{{ cat.nombre }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <select name="critico" class="form-select">
+                        <option value="">Todo el stock</option>
+                        <option value="1">Solo críticos</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-outline-primary w-100">
+                        <i class="bi bi-search"></i> Filtrar
+                    </button>
+                </div>
+            </div>
+        </form>
+        
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Nombre</th>
+                        <th>Marca</th>
+                        <th>Modelo</th>
+                        <th>Categoría</th>
+                        <th class="text-end">P. Venta</th>
+                        <th class="text-end">Stock</th>
+                        <th class="text-center">Estado</th>
+                        <th class="text-center">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for repuesto in page_obj %}
+                    <tr>
+                        <td><strong>{{ repuesto.codigo }}</strong></td>
+                        <td>{{ repuesto.nombre }}</td>
+                        <td>{{ repuesto.marca.nombre }}</td>
+                        <td>{{ repuesto.modelo|default:"-" }}</td>
+                        <td>{{ repuesto.categoria.nombre }}</td>
+                        <td class="text-end">${{ repuesto.precio_venta|floatformat:2 }}</td>
+                        <td class="text-end">
+                            {% if repuesto.stock_actual == 0 %}
+                            <span class="badge bg-secondary">Agotado</span>
+                            {% elif repuesto.esta_critico %}
+                            <span class="badge bg-danger">{{ repuesto.stock_actual }}</span>
+                            {% else %}
+                            {{ repuesto.stock_actual }}
+                            {% endif %}
+                        </td>
+                        <td class="text-center">
+                            {% if repuesto.esta_critico %}
+                            <span class="badge badge-critical">Crítico</span>
+                            {% elif repuesto.stock_actual <= repuesto.stock_minimo|add:2 %}
+                            <span class="badge badge-low">Bajo</span>
+                            {% else %}
+                            <span class="badge badge-ok">OK</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-center">
+                            <div class="btn-group btn-group-sm">
+                                <a href="{% url 'inventario:repuesto_detail' repuesto.id %}" class="btn btn-outline-info" title="Ver">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <a href="{% url 'inventario:repuesto_edit' repuesto.id %}" class="btn btn-outline-primary" title="Editar">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr><td colspan="9" class="text-center text-muted">No hay repuestos</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        {% if page_obj.has_other_pages %}
+        <nav>
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">&laquo;</a></li>
+                {% endif %}
+                {% for num in page_obj.paginator.page_range %}
+                <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+                    <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                </li>
+                {% endfor %}
+                {% if page_obj.has_next %}
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">&raquo;</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

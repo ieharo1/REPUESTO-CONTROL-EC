@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}{{ action }} Modelo - RepuestoControl EC{% endblock %}
+{% block page_title %}{{ action }} Modelo{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="bi bi-car me-2"></i>{{ action }} Modelo</h5>
+    </div>
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">Marca</label>
+                    {{ form.marca }}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Nombre del modelo</label>
+                    {{ form.nombre }}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Año inicio</label>
+                    {{ form.anio_inicio }}
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Año fin</label>
+                    {{ form.anio_fin }}
+                </div>
+            </div>
+            <div class="mt-4 text-end">
+                <a href="{% url 'inventario:modelo_list' %}" class="btn btn-secondary">Cancelar</a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-save"></i> Guardar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

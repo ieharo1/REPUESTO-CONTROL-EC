@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+{% block title %}Dashboard - RepuestoControl EC{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="row g-3 mb-4">
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="stat-value">{{ total_repuestos }}</div>
+                    <div class="stat-label">Total Repuestos</div>
+                </div>
+                <div class="stat-icon bg-primary bg-opacity-10 text-primary">
+                    <i class="bi bi-box-seam"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="stat-value text-danger">{{ productos_criticos }}</div>
+                    <div class="stat-label">Stock Crítico</div>
+                </div>
+                <div class="stat-icon bg-danger bg-opacity-10 text-danger">
+                    <i class="bi bi-exclamation-triangle"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="stat-value">${{ ingresos_hoy|floatformat:2 }}</div>
+                    <div class="stat-label">Ingresos Hoy</div>
+                </div>
+                <div class="stat-icon bg-success bg-opacity-10 text-success">
+                    <i class="bi bi-currency-dollar"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="stat-value">${{ ingresos_mes|floatformat:2 }}</div>
+                    <div class="stat-label">Ingresos del Mes</div>
+                </div>
+                <div class="stat-icon bg-info bg-opacity-10 text-info">
+                    <i class="bi bi-graph-up"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4 mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-fire me-2"></i>Productos Más Vendidos</span>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Código</th>
+                                <th>Producto</th>
+                                <th class="text-end">Vendidos</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in repuestos_mas_vendidos %}
+                            <tr>
+                                <td>{{ item.repuesto__codigo }}</td>
+                                <td>{{ item.repuesto__nombre }}</td>
+                                <td class="text-end"><span class="badge bg-success">{{ item.total_vendido }}</span></td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="3" class="text-center text-muted">Sin ventas aún</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-exclamation-circle me-2"></i>Stock Bajo</span>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Código</th>
+                                <th>Producto</th>
+                                <th class="text-end">Stock</th>
+                                <th class="text-end">Mín.</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in productos_bajo_stock %}
+                            <tr>
+                                <td>{{ item.codigo }}</td>
+                                <td>{{ item.nombre }}</td>
+                                <td class="text-end"><span class="badge bg-danger">{{ item.stock_actual }}</span></td>
+                                <td class="text-end">{{ item.stock_minimo }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="4" class="text-center text-muted">Todo OK</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <i class="bi bi-clock-history me-2"></i>Últimas Ventas
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Número</th>
+                                <th>Cliente</th>
+                                <th>Vendedor</th>
+                                <th class="text-end">Total</th>
+                                <th>Estado</th>
+                                <th>Fecha</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for venta in ultimas_ventas %}
+                            <tr>
+                                <td><a href="{% url 'ventas:venta_detail' venta.id %}">{{ venta.numero }}</a></td>
+                                <td>{{ venta.cliente|default:"-" }}</td>
+                                <td>{{ venta.vendedor.username }}</td>
+                                <td class="text-end">${{ venta.total|floatformat:2 }}</td>
+                                <td>
+                                    {% if venta.estado == 'completada' %}
+                                    <span class="badge bg-success">{{ venta.get_estado_display }}</span>
+                                    {% elif venta.estado == 'anulada' %}
+                                    <span class="badge bg-danger">{{ venta.get_estado_display }}</span>
+                                    {% else %}
+                                    <span class="badge bg-warning">{{ venta.get_estado_display }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ venta.created_at|date:"d/m/Y H:i" }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="6" class="text-center text-muted">Sin ventas aún</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

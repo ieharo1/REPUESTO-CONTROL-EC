@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}{{ action }} Cliente - RepuestoControl EC{% endblock %}
+{% block page_title %}{{ action }} Cliente{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header"><h5 class="mb-0"><i class="bi bi-person-plus me-2"></i>{{ action }} Cliente</h5></div>
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            <div class="row g-3">
+                <div class="col-md-6"><label class="form-label">Nombre</label>{{ form.nombre }}</div>
+                <div class="col-md-6"><label class="form-label">Cédula/RUC</label>{{ form.cedula }}</div>
+                <div class="col-md-6"><label class="form-label">Teléfono</label>{{ form.telefono }}</div>
+                <div class="col-md-6"><label class="form-label">Email</label>{{ form.email }}</div>
+                <div class="col-md-12"><label class="form-label">Dirección</label>{{ form.direccion }}</div>
+            </div>
+            <div class="mt-4 text-end">
+                <a href="{% url 'ventas:cliente_list' %}" class="btn btn-secondary">Cancelar</a>
+                <button type="submit" class="btn btn-primary"><i class="bi bi-save"></i> Guardar</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

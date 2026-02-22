@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Confirmar anulación{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header"><h5 class="mb-0">Confirmar anulación</h5></div>
+    <div class="card-body">
+        <div class="alert alert-warning">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            ¿Está seguro de <strong>anular</strong> la venta <strong>{{ venta.numero }}</strong>?
+            <br>El stock de los productos será restaurado.
+        </div>
+        <form method="post">{% csrf_token %}
+            <div class="text-end">
+                <a href="{% url 'ventas:venta_detail' venta.id %}" class="btn btn-secondary">Cancelar</a>
+                <button type="submit" class="btn btn-danger">Anular Venta</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

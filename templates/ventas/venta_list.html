@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}Ventas - RepuestoControl EC{% endblock %}
+{% block page_title %}Ventas{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <div class="row align-items-center">
+            <div class="col-md-6"><h5 class="mb-0"><i class="bi bi-cart3 me-2"></i>Ventas</h5></div>
+            <div class="col-md-6 text-end">
+                <a href="{% url 'ventas:venta_create' %}" class="btn btn-primary btn-sm">
+                    <i class="bi bi-plus-circle"></i> Nueva Venta
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Número</th>
+                    <th>Cliente</th>
+                    <th>Vendedor</th>
+                    <th class="text-end">Total</th>
+                    <th>Método</th>
+                    <th>Estado</th>
+                    <th>Fecha</th>
+                    <th class="text-center">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for venta in page_obj %}
+                <tr>
+                    <td><strong>{{ venta.numero }}</strong></td>
+                    <td>{{ venta.cliente|default:"-" }}</td>
+                    <td>{{ venta.vendedor.username }}</td>
+                    <td class="text-end">${{ venta.total|floatformat:2 }}</td>
+                    <td>{{ venta.get_metodo_pago_display }}</td>
+                    <td>
+                        {% if venta.estado == 'completada' %}<span class="badge bg-success">{{ venta.get_estado_display }}</span>
+                        {% elif venta.estado == 'anulada' %}<span class="badge bg-danger">{{ venta.get_estado_display }}</span>
+                        {% else %}<span class="badge bg-warning">{{ venta.get_estado_display }}</span>{% endif %}
+                    </td>
+                    <td>{{ venta.created_at|date:"d/m/Y H:i" }}</td>
+                    <td class="text-center">
+                        <div class="btn-group btn-group-sm">
+                            <a href="{% url 'ventas:venta_detail' venta.id %}" class="btn btn-outline-info"><i class="bi bi-eye"></i></a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="8" class="text-center text-muted">No hay ventas</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% if page_obj.has_other_pages %}
+        <nav><ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}<li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">&laquo;</a></li>{% endif %}
+            {% for num in page_obj.paginator.page_range %}<li class="page-item {% if page_obj.number == num %}active{% endif %}"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>{% endfor %}
+            {% if page_obj.has_next %}<li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">&raquo;</a></li>{% endif %}
+        </ul></nav>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}{{ repuesto.nombre }} - RepuestoControl EC{% endblock %}
+{% block page_title %}{{ repuesto.nombre }}{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header">
+        <div class="row align-items-center">
+            <div class="col-md-6"><h5 class="mb-0"><i class="bi bi-box-seam me-2"></i>{{ repuesto.codigo }}</h5></div>
+            <div class="col-md-6 text-end">
+                <a href="{% url 'inventario:repuesto_edit' repuesto.id %}" class="btn btn-primary btn-sm">
+                    <i class="bi bi-pencil"></i> Editar
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-8">
+                <table class="table table-borderless">
+                    <tr><th width="150">Nombre:</th><td>{{ repuesto.nombre }}</td></tr>
+                    <tr><th>Descripción:</th><td>{{ repuesto.descripcion|default:"-" }}</td></tr>
+                    <tr><th>Marca:</th><td>{{ repuesto.marca.nombre }}</td></tr>
+                    <tr><th>Modelo:</th><td>{{ repuesto.modelo|default:"-" }}</td></tr>
+                    <tr><th>Categoría:</th><td>{{ repuesto.categoria.nombre }}</td></tr>
+                    <tr><th>Ubicación:</th><td>{{ repuesto.get_ubicacion_display|default:"-" }}</td></tr>
+                </table>
+            </div>
+            <div class="col-md-4">
+                <div class="card bg-light">
+                    <div class="card-body text-center">
+                        <h6 class="text-muted">Precio Compra</h6>
+                        <h3 class="text-primary">${{ repuesto.precio_compra|floatformat:2 }}</h3>
+                        <hr>
+                        <h6 class="text-muted">Precio Venta</h6>
+                        <h3 class="text-success">${{ repuesto.precio_venta|floatformat:2 }}</h3>
+                        <hr>
+                        <h6 class="text-muted">Ganancia</h6>
+                        <h4 class="text-info">${{ repuesto.ganancia|floatformat:2 }}</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row mt-3">
+            <div class="col-md-12">
+                <div class="alert {% if repuesto.esta_critico %}alert-danger{% else %}alert-success{% endif %}">
+                    <strong>Stock actual:</strong> {{ repuesto.stock_actual }} | 
+                    <strong>Stock mínimo:</strong> {{ repuesto.stock_minimo }}
+                    {% if repuesto.esta_critico %}
+                    <span class="badge bg-danger ms-2">CRÍTICO</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
