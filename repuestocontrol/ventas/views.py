@@ -3,7 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db import transaction
-from django.http import JsonResponse
+from django.http import JsonResponse, FileResponse, HttpResponse
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from decimal import Decimal
@@ -17,6 +17,7 @@ from repuestocontrol.core.sri import (
     validar_cedula,
     validar_ruc,
 )
+from repuestocontrol.core.procesamiento_sri import procesar_factura_electronica
 from .forms import ClienteForm, VentaForm
 
 
@@ -58,7 +59,7 @@ def venta_create(request):
     clientes = Cliente.objects.all().order_by("nombre")
 
     config = Configuracion.get_config()
-    iva_tarifa = float(config.iva_tarifa) if config else 12
+    iva_tarifa = float(config.iva_tarifa_12) if config else 12
 
     return render(
         request,
@@ -166,7 +167,7 @@ def crear_venta(request):
                 subtotal_12 += detalle.subtotal
 
             # Calcular IVA
-            iva_tarifa = Decimal(str(config.iva_tarifa))
+            iva_tarifa = Decimal(str(config.iva_tarifa_12))
             subtotal_con_desc = subtotal_12 - descuento
             iva = subtotal_con_desc * (iva_tarifa / Decimal("100"))
             total = subtotal_12 + subtotal_0 + iva - descuento
@@ -342,3 +343,133 @@ def validar_identificacion(request):
             else "Identificación inválida",
         }
     )
+
+
+@login_required
+def autorizar_factura(request, pk):
+    """
+    Vista para autorizar una factura en el SRI
+    """
+    venta = get_object_or_404(
+        Venta.objects.prefetch_related("detalles__repuesto"), pk=pk
+    )
+
+    config = Configuracion.get_config()
+
+    if not config:
+        messages.error(request, "No hay configuración de empresa.")
+        return redirect("ventas:venta_detail", pk=pk)
+
+    if venta.estado_sri == "autorizado":
+        messages.info(request, "La factura ya está autorizada.")
+        return redirect("ventas:venta_detail", pk=pk)
+
+    try:
+        resultado = procesar_factura_electronica(
+            venta=venta,
+            config=config,
+            firmar=True,
+            enviar_sri=True,
+            enviar_email=config.enviar_email_auto,
+        )
+
+        if resultado["success"]:
+            messages.success(
+                request,
+                f"Factura autorizada correctamente. Número: {resultado.get('numero_autorizacion', '')}",
+            )
+        else:
+            error_msg = "; ".join(resultado.get("errores", []))
+            messages.warning(request, f"Factura procesada con errores: {error_msg}")
+
+    except Exception as e:
+        messages.error(request, f"Error al procesar factura: {str(e)}")
+
+    return redirect("ventas:venta_detail", pk=pk)
+
+
+@login_required
+def descargar_xml(request, pk):
+    """Descarga el XML de la factura"""
+    venta = get_object_or_404(Venta, pk=pk)
+
+    if not venta.clave_acceso:
+        messages.error(request, "La factura no tiene XML generado.")
+        return redirect("ventas:venta_detail", pk=pk)
+
+    xml_content = getattr(venta, "xml_content", None)
+    if not xml_content:
+        messages.error(request, "XML no disponible.")
+        return redirect("ventas:venta_detail", pk=pk)
+
+    response = HttpResponse(xml_content, content_type="application/xml")
+    response["Content-Disposition"] = (
+        f'attachment; filename="{venta.numero_factura}.xml"'
+    )
+    return response
+
+
+@login_required
+def descargar_pdf(request, pk):
+    """Descarga el PDF RIDE de la factura"""
+    from repuestocontrol.core.generador_pdf import generar_pdf_rid
+
+    venta = get_object_or_404(
+        Venta.objects.prefetch_related("detalles__repuesto"), pk=pk
+    )
+
+    config = Configuracion.get_config()
+
+    if not config:
+        messages.error(request, "No hay configuración.")
+        return redirect("ventas:venta_detail", pk=pk)
+
+    try:
+        pdf_bytes = generar_pdf_rid(venta, config)
+
+        response = HttpResponse(pdf_bytes, content_type="application/pdf")
+        response["Content-Disposition"] = (
+            f'attachment; filename="{venta.numero_factura}.pdf"'
+        )
+        return response
+
+    except Exception as e:
+        messages.error(request, f"Error al generar PDF: {str(e)}")
+        return redirect("ventas:venta_detail", pk=pk)
+
+
+@login_required
+def verificar_estado_sri(request, pk):
+    """Verifica el estado de la factura en el SRI"""
+    from repuestocontrol.core.procesamiento_sri import verificar_estado_factura
+
+    venta = get_object_or_404(Venta, pk=pk)
+    config = Configuracion.get_config()
+
+    if not venta.clave_acceso:
+        messages.error(request, "La factura no tiene clave de acceso.")
+        return redirect("ventas:venta_detail", pk=pk)
+
+    try:
+        resultado = verificar_estado_factura(
+            clave_acceso=venta.clave_acceso, ambiente=config.ambiente if config else "1"
+        )
+
+        if resultado.get("success"):
+            estado = resultado.get("estado", "DESCONOCIDO")
+
+            if estado == "AUTORIZADA":
+                venta.estado_sri = "autorizado"
+                venta.numero_autorizacion = resultado.get("numero_autorizacion", "")
+                venta.fecha_autorizacion = resultado.get("fecha_autorizacion", "")
+                venta.save()
+                messages.success(request, f"Estado: {estado}")
+            else:
+                messages.warning(request, f"Estado: {estado}")
+        else:
+            messages.error(request, f"Error: {resultado.get('error', 'Desconocido')}")
+
+    except Exception as e:
+        messages.error(request, f"Error al verificar: {str(e)}")
+
+    return redirect("ventas:venta_detail", pk=pk)

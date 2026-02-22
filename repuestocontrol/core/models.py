@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.utils.translation import gettext_lazy as _
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 
 class Configuracion(models.Model):
@@ -41,17 +42,52 @@ class Configuracion(models.Model):
     punto_emision = models.CharField(
         max_length=3, default="001", verbose_name="Punto de Emisión"
     )
+
+    # Secuenciales por tipo de comprobante
     secuencia_factura = models.PositiveIntegerField(
-        default=1, verbose_name="Secuencial de Factura"
+        default=1, verbose_name="Secuencial Factura"
+    )
+    secuencia_nota_credito = models.PositiveIntegerField(
+        default=1, verbose_name="Secuencial Nota Crédito"
+    )
+    secuencia_nota_debito = models.PositiveIntegerField(
+        default=1, verbose_name="Secuencial Nota Débito"
+    )
+    secuencia_guia_remision = models.PositiveIntegerField(
+        default=1, verbose_name="Secuencial Guía Remisión"
+    )
+    secuencia_retencion = models.PositiveIntegerField(
+        default=1, verbose_name="Secuencial Retención"
     )
 
-    # Impuestos configurables
-    iva_tarifa = models.DecimalField(
+    # Impuestos configurables - TARIFAS IVA
+    iva_tarifa_12 = models.DecimalField(
         max_digits=5,
         decimal_places=2,
         default=12.00,
-        verbose_name="Tarifa IVA (%)",
-        help_text="Porcentaje del IVA (12%, 14%, 15%)",
+        verbose_name="Tarifa IVA 12%",
+        help_text="Porcentaje IVA categoría gravada",
+    )
+    iva_tarifa_14 = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        default=0.00,
+        verbose_name="Tarifa IVA 14%",
+        help_text="Porcentaje IVA categoría gravada (si aplica)",
+    )
+    ice_tarifa = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        default=0.00,
+        verbose_name="Tarifa ICE (%)",
+        help_text="Porcentaje Impuesto Consumos Especiales",
+    )
+    irbp_tarifa = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        default=0.00,
+        verbose_name="Tarifa IRBP (%)",
+        help_text="Porcentaje IRBP (solo aplicable en ciertos productos)",
     )
 
     # Contabilidad
@@ -92,8 +128,11 @@ class Configuracion(models.Model):
     )
 
     # Certificado digital
-    certificado_path = models.CharField(
-        max_length=500, blank=True, verbose_name="Ruta certificado (.p12)"
+    certificado_archivo = models.FileField(
+        upload_to="certificados/",
+        blank=True,
+        null=True,
+        verbose_name="Archivo certificado (.p12)",
     )
     certificado_password = models.CharField(
         max_length=100, blank=True, verbose_name="Clave certificado"
@@ -128,18 +167,33 @@ class Configuracion(models.Model):
             config = cls.objects.first()
         return config
 
-    def get_siguiente_secuencial(self):
-        """Obtiene ycrementa el secuencial"""
-        seq = self.secuencia_factura
-        self.secuencia_factura += 1
-        self.save()
+    def get_siguiente_secuencial(self, tipo="01"):
+        """Obtiene y incrementa el secuencial según el tipo de comprobante"""
+        campos = {
+            "01": "secuencia_factura",
+            "04": "secuencia_nota_credito",
+            "05": "secuencia_nota_debito",
+            "06": "secuencia_guia_remision",
+            "07": "secuencia_retencion",
+        }
+
+        campo = campos.get(tipo, "secuencia_factura")
+        seq = getattr(self, campo)
+        setattr(self, campo, seq + 1)
+        self.save(update_fields=[campo])
         return seq
 
-    def generar_numero_factura(self, secuencial=None):
-        """Genera el número de factura: 001-001-000000001"""
+    def generar_numero_factura(self, secuencial=None, tipo="01"):
+        """Genera el número de comprobante: 001-001-000000001"""
         if secuencial is None:
-            secuencial = self.get_siguiente_secuencial()
+            secuencial = self.get_siguiente_secuencial(tipo)
         return f"{self.establecimiento}-{self.punto_emision}-{str(secuencial).zfill(9)}"
+
+    def get_certificado_path(self):
+        """Obtiene la ruta del certificado"""
+        if self.certificado_archivo:
+            return self.certificado_archivo.path
+        return None
 
 
 class Usuario(AbstractUser):

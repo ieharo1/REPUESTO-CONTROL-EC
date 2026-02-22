@@ -23,7 +23,7 @@ class Command(BaseCommand):
                 establecimiento="001",
                 punto_emision="001",
                 secuencia_factura=1,
-                iva_tarifa=12.00,
+                iva_tarifa_12=12.00,
                 obligado_contabilidad=True,
                 tipo_contribuyente="sociedad",
                 regimen_tributario="general",

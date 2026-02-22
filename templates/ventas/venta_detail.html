@@ -30,6 +30,7 @@
                             <tr><td><strong>Identificación:</strong></td><td>{{ venta.cliente_identificacion|default:"-" }}</td></tr>
                             <tr><td><strong>Dirección:</strong></td><td>{{ venta.cliente_direccion|default:"-" }}</td></tr>
                             <tr><td><strong>Teléfono:</strong></td><td>{{ venta.cliente_telefono|default:"-" }}</td></tr>
+                            <tr><td><strong>Email:</strong></td><td>{{ venta.cliente_email|default:"-" }}</td></tr>
                         </table>
                     </div>
                     <div class="col-md-6">
@@ -37,6 +38,7 @@
                         <table class="table table-borderless table-sm">
                             <tr><td><strong>Vendedor:</strong></td><td>{{ venta.vendedor.username }}</td></tr>
                             <tr><td><strong>Método de pago:</strong></td><td>{{ venta.get_metodo_pago_display }}</td></tr>
+                            <tr><td><strong>Forma de pago SRI:</strong></td><td>{{ venta.forma_pago_sri }}</td></tr>
                             <tr><td><strong>Fecha:</strong></td><td>{{ venta.created_at|date:"d/m/Y H:i" }}</td></tr>
                             <tr><td><strong>Estado:</strong></td>
                                 <td>
@@ -52,7 +54,7 @@
                 <h6 class="text-muted mb-3">Detalle de Productos</h6>
                 <table class="table table-sm">
                     <thead class="table-light">
-                        <tr><th>Código</th><th>Producto</th><th class="text-center">Cantidad</th><th class="text-end">Precio</th><th class="text-end">Subtotal</th></tr>
+                        <tr><th>Código</th><th>Producto</th><th class="text-center">Cantidad</th><th class="text-end">Precio</th><th class="text-end">Desc.</th><th class="text-end">Subtotal</th></tr>
                     </thead>
                     <tbody>
                         {% for detalle in venta.detalles.all %}
@@ -61,18 +63,19 @@
                             <td>{{ detalle.repuesto.nombre }}</td>
                             <td class="text-center">{{ detalle.cantidad }}</td>
                             <td class="text-end">${{ detalle.precio_unitario|floatformat:2 }}</td>
+                            <td class="text-end">${{ detalle.descuento_item|floatformat:2 }}</td>
                             <td class="text-end">${{ detalle.subtotal|floatformat:2 }}</td>
                         </tr>
                         {% endfor %}
                     </tbody>
                     <tfoot class="table-light">
-                        <tr><th colspan="4" class="text-end">Subtotal 12%:</th><td class="text-end">${{ venta.subtotal_12|floatformat:2 }}</td></tr>
-                        <tr><th colspan="4" class="text-end">Subtotal 0%:</th><td class="text-end">${{ venta.subtotal_0|floatformat:2 }}</td></tr>
+                        <tr><th colspan="5" class="text-end">Subtotal 12%:</th><td class="text-end">${{ venta.subtotal_12|floatformat:2 }}</td></tr>
+                        <tr><th colspan="5" class="text-end">Subtotal 0%:</th><td class="text-end">${{ venta.subtotal_0|floatformat:2 }}</td></tr>
                         {% if venta.descuento > 0 %}
-                        <tr><th colspan="4" class="text-end text-danger">Descuento:</th><td class="text-end text-danger">-${{ venta.descuento|floatformat:2 }}</td></tr>
+                        <tr><th colspan="5" class="text-end text-danger">Descuento:</th><td class="text-end text-danger">-${{ venta.descuento|floatformat:2 }}</td></tr>
                         {% endif %}
-                        <tr><th colspan="4" class="text-end">IVA:</th><td class="text-end">${{ venta.iva|floatformat:2 }}</td></tr>
-                        <tr><th colspan="4" class="text-end h5">Total:</th><td class="text-end h5 text-success">${{ venta.total|floatformat:2 }}</td></tr>
+                        <tr><th colspan="5" class="text-end">IVA:</th><td class="text-end">${{ venta.iva|floatformat:2 }}</td></tr>
+                        <tr><th colspan="5" class="text-end h5">Total:</th><td class="text-end h5 text-success">${{ venta.total|floatformat:2 }}</td></tr>
                     </tfoot>
                 </table>
                 
@@ -89,32 +92,54 @@
             <div class="card-header bg-primary text-white">
                 <h6 class="mb-0"><i class="bi bi-file-earmark-check me-2"></i>Factura Electrónica SRI</h6>
             </div>
-            <div class="card-body class="table table">
+            <div class="card-body">
                 <table class="table table-borderless table-sm">
                     <tr><td><strong>Factura No.</strong></td><td><code class="h6">{{ venta.numero_factura|default:"-" }}</code></td></tr>
                     <tr><td><strong>Estado SRI</strong></td>
                         <td>
-                            {% if venta.estado_sri == 'autorizada' %}
+                            {% if venta.estado_sri == 'autorizado' %}
+                            <span class="badge bg-success">AUTORIZADO</span>
+                            {% elif venta.estado_sri == 'autorizada' %}
                             <span class="badge bg-success">AUTORIZADA</span>
-                            {% elif venta.estado_sri == 'enviada' %}
+                            {% elif venta.estado_sri == 'enviado' or venta.estado_sri == 'enviada' %}
                             <span class="badge bg-info">ENVIADA</span>
                             {% elif venta.estado_sri == 'anulada' %}
                             <span class="badge bg-danger">ANULADA</span>
+                            {% elif venta.estado_sri == 'devuelto' %}
+                            <span class="badge bg-danger">DEVUELTO</span>
                             {% else %}
                             <span class="badge bg-warning">{{ venta.estado_sri|upper }}</span>
                             {% endif %}
                         </td>
                     </tr>
                     <tr><td><strong>Clave de Acceso</strong></td><td><small>{{ venta.clave_acceso|default:"-" }}</small></td></tr>
+                    {% if venta.numero_autorizacion %}
+                    <tr><td><strong>Número Autorización</strong></td><td><small>{{ venta.numero_autorizacion }}</small></td></tr>
+                    {% endif %}
+                    {% if venta.fecha_autorizacion %}
+                    <tr><td><strong>Fecha Autorización</strong></td><td><small>{{ venta.fecha_autorizacion }}</small></td></tr>
+                    {% endif %}
                 </table>
                 
                 <div class="d-grid gap-2 mt-3">
-                    <button class="btn btn-outline-primary btn-sm" onclick="alert('Funcionalidad de descarga de XML en desarrollo')">
+                    {% if venta.estado_sri != 'autorizado' and venta.estado_sri != 'autorizada' %}
+                    <a href="{% url 'ventas:autorizar_factura' venta.id %}" class="btn btn-success btn-sm">
+                        <i class="bi bi-check-circle me-1"></i> Autorizar en SRI
+                    </a>
+                    <a href="{% url 'ventas:verificar' venta.id %}" class="btn btn-outline-info btn-sm">
+                        <i class="bi bi-arrow-clockwise me-1"></i> Verificar Estado
+                    </a>
+                    {% endif %}
+                    
+                    {% if venta.clave_acceso %}
+                    <a href="{% url 'ventas:descargar_xml' venta.id %}" class="btn btn-outline-primary btn-sm">
                         <i class="bi bi-download me-1"></i> Descargar XML
-                    </button>
-                    <button class="btn btn-outline-danger btn-sm" onclick="alert('Funcionalidad de PDF RIDE en desarrollo')">
+                    </a>
+                    {% endif %}
+                    
+                    <a href="{% url 'ventas:descargar_pdf' venta.id %}" class="btn btn-outline-danger btn-sm">
                         <i class="bi bi-file-pdf me-1"></i> Generar RIDE (PDF)
-                    </button>
+                    </a>
                 </div>
             </div>
         </div>

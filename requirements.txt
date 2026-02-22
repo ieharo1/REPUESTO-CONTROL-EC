@@ -4,3 +4,32 @@ python-dotenv>=1.0.0
 Pillow>=10.0.0
 django-widget-tweaks>=1.5.0
 gunicorn>=21.0.0
+
+# Firmado digital y XML
+lxml>=4.9.0
+xmlsec>=1.3.14
+defusedxml>=0.7.1
+
+# Validación XSD
+genson>=1.3.0
+
+# PDF RIDE
+reportlab>=4.0.0
+
+# QR Code
+qrcode>=7.4.0
+python-barcode>=0.15.0
+
+# Email
+django-anymail>=10.0
+
+# Utilities
+python-dateutil>=2.8.2
+pytz>=2023.3
+
+# Testing
+pytest>=7.4.0
+pytest-django>=4.5.0
+
+# Production
+whitenoise>=6.5.0

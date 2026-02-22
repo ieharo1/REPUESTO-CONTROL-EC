@@ -71,6 +71,16 @@ class Venta(models.Model):
         max_length=20, default="pendiente", verbose_name="Estado SRI"
     )
 
+    # Autorización SRI
+    numero_autorizacion = models.CharField(
+        max_length=49, blank=True, verbose_name="Número de Autorización"
+    )
+    fecha_autorizacion = models.CharField(
+        max_length=30, blank=True, verbose_name="Fecha de Autorización"
+    )
+    xml_content = models.TextField(blank=True, verbose_name="XML del comprobante")
+    xml_firmado = models.TextField(blank=True, verbose_name="XML firmado")
+
     establecimiento = models.CharField(
         max_length=3, default="001", verbose_name="Establecimiento"
     )

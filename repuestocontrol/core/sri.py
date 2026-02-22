@@ -142,7 +142,7 @@ def generar_xml_factura(venta, config):
     )
 
     # Calcular IVA
-    iva_tarifa = float(config.iva_tarifa)
+    iva_tarifa = float(config.iva_tarifa_12)
     subtotal_12 = float(venta.subtotal_12)
     descuento = float(venta.descuento)
     subtotal_con_desc = subtotal_12 - descuento

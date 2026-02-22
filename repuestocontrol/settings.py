@@ -31,6 +31,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -68,6 +69,10 @@ DATABASES = {
         "PASSWORD": os.getenv("DB_PASSWORD", "postgres"),
         "HOST": os.getenv("DB_HOST", "localhost"),
         "PORT": os.getenv("DB_PORT", "5432"),
+        "CONN_MAX_AGE": 60,
+        "OPTIONS": {
+            "sslmode": os.getenv("DB_SSL_MODE", "prefer"),
+        },
     }
 }
 
@@ -106,3 +111,138 @@ MESSAGE_TAGS = {
     messages.WARNING: "alert-warning",
     messages.INFO: "alert-info",
 }
+
+# ============================================
+# CONFIGURACIÓN DE EMAIL - FACTURACIÓN ELECTRÓNICA
+# ============================================
+
+EMAIL_BACKEND = os.getenv(
+    "EMAIL_BACKEND", "django.core.mail.backends.smtp.EmailBackend"
+)
+EMAIL_HOST = os.getenv("EMAIL_HOST", "smtp.gmail.com")
+EMAIL_PORT = int(os.getenv("EMAIL_PORT", "587"))
+EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", "")
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", "")
+EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", "True") == "True"
+EMAIL_USE_SSL = os.getenv("EMAIL_USE_SSL", "False") == "True"
+EMAIL_TIMEOUT = int(os.getenv("EMAIL_TIMEOUT", "30"))
+DEFAULT_FROM_EMAIL = os.getenv(
+    "DEFAULT_FROM_EMAIL", os.getenv("EMAIL_HOST_USER", "noreply@empresa.com")
+)
+
+# ============================================
+# CONFIGURACIÓN DE SEGURIDAD - PRODUCCIÓN
+# ============================================
+
+# CSRF
+CSRF_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_HTTPONLY = True
+CSRF_COOKIE_SAMESITE = "Lax"
+
+# Session
+SESSION_COOKIE_SECURE = not DEBUG
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = "Lax"
+
+# SSL/HTTPS
+SECURE_SSL_REDIRECT = not DEBUG
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
+# Content Security Policy
+SECURE_CONTENT_TYPE_NOSNIFF = True
+SECURE_BROWSER_XSS_FILTER = True
+X_FRAME_OPTIONS = "DENY"
+
+# HSTS (solo en producción)
+if not DEBUG:
+    SECURE_HSTS_SECONDS = 31536000
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+
+# ============================================
+# CONFIGURACIÓN DE LOGGING
+# ============================================
+
+# Crear directorio de logs si no existe
+logs_dir = BASE_DIR / "logs"
+logs_dir.mkdir(exist_ok=True)
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "verbose": {
+            "format": "{levelname} {asmodule} {processctime} {:d} {thread:d} {message}",
+            "style": "{",
+        },
+        "simple": {
+            "format": "{levelname} {message}",
+            "style": "{",
+        },
+    },
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "simple",
+        },
+    },
+    "root": {
+        "handlers": ["console"],
+        "level": "INFO",
+    },
+    "loggers": {
+        "django": {
+            "handlers": ["console"],
+            "level": "INFO",
+            "propagate": False,
+        },
+        "repuestocontrol": {
+            "handlers": ["console"],
+            "level": "DEBUG",
+            "propagate": False,
+        },
+    },
+}
+
+# ============================================
+# CACHE
+# ============================================
+
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        "LOCATION": "unique-snowflake",
+    }
+}
+
+# ============================================
+# ARCHIVOS ESTÁTICOS Y MEDIA
+# ============================================
+
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+
+# ============================================
+# CONFIGURACIÓN DE FACTURACIÓN ELECTRÓNICA
+# ============================================
+
+# Ruta de certificados digitales
+CERTIFICADOS_DIR = BASE_DIR / "certificados"
+
+# Validación XSD
+XSD_DIR = BASE_DIR / "xsd"
+
+# Timeout para conexiones SRI (segundos)
+SRI_TIMEOUT = int(os.getenv("SRI_TIMEOUT", "60"))
+
+# Reintentos SRI
+SRI_REINTENTOS = int(os.getenv("SRI_REINTENTOS", "3"))
+
+# ============================================
+# SEGURIDAD ADICIONAL
+# ============================================
+
+# Longitud mínima de contraseñas
+AUTH_PASSWORD_MIN_LENGTH = 8
+
+# Permite autenticación en múltiples dispositivos
+AUTH_REMOTE_USER = False
